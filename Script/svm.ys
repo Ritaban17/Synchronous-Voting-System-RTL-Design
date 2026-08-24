@@ -1,0 +1,17 @@
+read_verilog svm.v mux4x1.v decoder2x4.v add.v register.v upcounter.v
+
+hierarchy -check -top svm
+
+proc; opt; fsm; opt; memory; opt
+
+techmap; opt
+
+dfflibmap -liberty /home/vboxuser/OpenLaneUser/designs/reproducibles/2065/issue_reproducible/pdk/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu9t5v0/liberty/gf180mcu_fd_sc_mcu9t5v0__ss_125C_4v50.lib
+
+abc -liberty /home/vboxuser/OpenLaneUser/designs/reproducibles/2065/issue_reproducible/pdk/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu9t5v0/liberty/gf180mcu_fd_sc_mcu9t5v0__ss_125C_4v50.lib 
+
+clean
+
+show svm
+
+write_verilog svm_synth.v
