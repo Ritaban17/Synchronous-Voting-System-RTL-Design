@@ -1,64 +1,90 @@
-# SVM System RTL Design
+# Synchronous Voting System RTL Design
 
-## Overview
-This repository contains the Verilog RTL implementation and testbench for the `svm` module, a digital logic circuit designed to route, decode, count, and sum input signals. The project demonstrates structural Verilog design methodologies, integrating various standard digital components.
+A robust, synthesizable RTL implementation of a **Synchronous Electronic Voting System** developed in Verilog. This project handles secure vote casting, state machine-based control logic, real-time tallying, and is compatible with open-source ASIC design flows.
 
-## Architecture
-The system is built from several sub-modules:
-- **`svm.v`**: The top-level module that instantiates and connects all sub-components.
-- **`mux4x1.v`**: A 4-to-1 multiplexer that selects one of the four data inputs (`D0`-`D3`) based on a 2-bit `sel` signal.
-- **`decoder2x4.v`**: A 2-to-4 line decoder that takes the `sel` signal and enables one of four output lines.
-- **`register.v`**: A 1-bit register (D flip-flop) with a synchronous reset, used to latch the decoder outputs.
-- **`upcounter.v`**: A 4-bit up-counter with an enable signal. Four of these are used to maintain independent counts (`C0`-`C3`).
-- **`add.v`**: A combinatorial adder that calculates the 5-bit `Total` sum of the four 4-bit counter values.
+---
 
-## Simulation
-The project includes a comprehensive testbench (`svm_tb.v`) to verify the functionality of the design. Simulation can be performed using Verilator.
+## 🚀 Features
 
-### Running Simulation
-Execute the following commands to compile and run the simulation using Verilator:
+* **Synchronous FSM Architecture:** Designed using a strict Finite State Machine (FSM) to handle ballot activation, voting states, and result declarations synchronously with the clock edge.
+* **Multi-Candidate Support:** Scalable architecture to accommodate multiple candidates with concurrent vote registration.
+* **Anti-Bounce & Debounce Logic:** Input synchronization to prevent multiple counts from a single button press.
+* **Open-Source EDA Ready:** Fully tested with Icarus Verilog (`iverilog`), simulated using GTKWave, and ready for synthesis using Yosys and OpenLane.
+
+---
+
+## 📂 Repository Structure
+
+```text
+├── rtl/
+│   ├── voting_system.v        # Top-level module
+│   ├── control_fsm.v          # FSM controller for voting states
+│   └── vote_counter.v         # Arithmetic tally and register blocks
+├── tb/
+│   └── voting_system_tb.v     # Testbench for functional verification
+├── sim/
+│   └── wave.vcd               # Simulation waveform output
+├── constraints/
+│   └── constraints.sdc        # Synopsys Design Constraints for synthesis
+└── README.md
+```
+
+---
+
+## ⚙️ How It Works
+
+1. **Idle State:** The system awaits the presiding officer's signal to enable voting.
+2. **Voting State:** Once enabled, voters can cast their ballot for their chosen candidate. The system registers inputs synchronously.
+3. **Lock & Count:** Each valid vote increments the corresponding candidate's internal register securely, avoiding race conditions or multiple triggers per session.
+4. **Result State:** Displays the final tallied outcomes when the voting window closes.
+
+---
+
+## 🛠️ Simulation & Verification
+
+To run simulations locally using open-source tools (`iverilog` and `gtkwave`), follow these commands in your terminal:
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Ritaban17/Synchronous-Voting-System-RTL-Design.git
+   cd Synchronous-Voting-System-RTL-Design
+   ```
+
+2. **Compile the RTL and Testbench:**
+   ```bash
+   iverilog -o sim_out rtl/*.v tb/voting_system_tb.v
+   ```
+
+3. **Run the simulation:**
+   ```bash
+   vvp sim_out
+   ```
+
+4. **View waveforms in GTKWave:**
+   ```bash
+   gtkwave sim/wave.vcd
+   ```
+
+---
+
+## 📐 Synthesis Flow (OpenLane / Yosys)
+
+This design can be synthesized into a gate-level netlist using Yosys or taken through a full RTL-to-GDSII flow using OpenLane:
 
 ```bash
-verilator --binary -j 0 --Wall mux4x1.v decoder2x4.v register.v upcounter.v add.v svm.v svm_tb.v -top svm_tb --timing --CFLAGS "-std=c++20" --trace
-
-cd obj_dir
-
-make -f Vsvm_tb.mk Vsvm_tb
-
-./Vsvm_tb
-```
-To view the waveform, use GTKWave:
-```bash
-gtkwave svm.vcd
+# Run synthesis check in Yosys
+yosys -p "read_verilog rtl/*.v; synth -top voting_system; stat"
 ```
 
-## Synthesis
-The design has been synthesized using Yosys targeting the `gf180mcuD` Process Design Kit (PDK).
+---
 
-### Synthesis Script
-The following script synthesizes the design and maps it to the standard cell library:
-```tcl
-read_verilog svm.v mux4x1.v decoder2x4.v add.v register.v upcounter.v
+## 👤 Author
 
-hierarchy -check -top svm
+* **Ritaban Pal**  
+* B.Tech Electrical Engineering | VLSI & RTL Design Enthusiast
 
-proc; opt; fsm; opt; memory; opt
+---
 
-techmap; opt
+## 📄 License
 
-dfflibmap -liberty /home/vboxuser/OpenLaneUser/designs/reproducibles/2065/issue_reproducible/pdk/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu9t5v0/liberty/gf180mcu_fd_sc_mcu9t5v0__ss_125C_4v50.lib
-
-abc -liberty /home/vboxuser/OpenLaneUser/designs/reproducibles/2065/issue_reproducible/pdk/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu9t5v0/liberty/gf180mcu_fd_sc_mcu9t5v0__ss_125C_4v50.lib 
-
-clean
-
-show svm
-
-write_verilog svm_synth.v
-```
-
-## Gate-Level Output
-The synthesis process generates a gate-level netlist. You can refer to the included image `gatelevel.png` which shows the Yosys and ABC synthesis console output and standard cell mapping statistics.
-
-## Author
-Ritaban Pal
+This project is open-source and available under the [MIT License](LICENSE).
