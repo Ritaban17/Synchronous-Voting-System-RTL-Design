@@ -38,6 +38,9 @@ A robust, synthesizable RTL implementation of a **Synchronous Electronic Voting 
 3. **Lock & Count:** Each valid vote increments the corresponding candidate's internal register securely, avoiding race conditions or multiple triggers per session.
 4. **Result State:** Displays the final tallied outcomes when the voting window closes.
 
+ <img width="802" height="411" alt="Screenshot 2026-10-05 200719" src="https://github.com/user-attachments/assets/23f843c2-a65c-4472-b5c8-68b769a4bc5a" />
+
+
 ---
 
 ## 🛠️ Simulation & Verification
